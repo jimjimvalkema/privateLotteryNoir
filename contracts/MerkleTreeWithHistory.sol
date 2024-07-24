@@ -5,8 +5,9 @@ import "poseidon-solidity/PoseidonT3.sol";
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-
-contract MerkleTree{
+// modification of the tornadocash contract. Mainly using poseidon instead of mimc and zeros set to actual zeros
+// https://github.com/tornadocash/tornado-core/blob/master/contracts/MerkleTreeWithHistory.sol
+contract MerkleTreeWithHistory {
 
   uint32 public levels;
   
@@ -22,7 +23,7 @@ contract MerkleTree{
 
   constructor(uint32 _levels) {
     require(_levels > 0, "_levels should be greater than zero");
-    require(_levels < 31, "_levels should be less than 31"); 
+    require(_levels < 32, "_levels should be less than 32"); 
     levels = _levels;
 
     for (uint32 i = 0; i < _levels; i++) {

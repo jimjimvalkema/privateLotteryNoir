@@ -1,20 +1,38 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
-
+import "@openzeppelin/contracts/access/Ownable.sol";
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-contract Lottery {
-    constructor() payable {
+
+event Purchase(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp);
+
+
+contract Lottery is Ownable,  {
+    mapping (bytes32 => bool) ticketCommitment;
+
+    constructor(
+        uint32 _merkleTreeHeight // defines max amount deposits = 2^_merkleTreeHeight
+    ) MerkleTreeWithHistory(_merkleTreeHeight) payable {
     }
 
-    function buyTicket(bytes32 ticketCommitment) public payable {
+    function buyTicket(bytes32 _ticketCommitment) public payable {
+        require(!ticketCommitment[_ticketCommitment], "A ticket with this commitment was already bought");
+        
+        uint32 insertedIndex = _insert(_commitment); // inserts into merkle tree
+        ticketCommitment[_commitment] = true;
+        
+        // TODO get money
+        
+        // needed to reconstruct the merkle tree client side 
+        // since the tree inst in the contract for its entirety 
+        emit Purchase(_ticketCommitment, insertedIndex, block.timestamp); 
     }
 
-    function draw(winningPickId uint256) public {
+    function draw(uint256 winningPickId) public onlyOwner {
     }
 
-    function revealWinningCommitments (bytes32[] commitments) {
+    function revealWinningCommitment (bytes32[] commitment) {
     }
 
     function payOutWinners(){
