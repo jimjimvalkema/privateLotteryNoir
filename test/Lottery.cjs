@@ -1,9 +1,69 @@
+const { expect } = require("chai");
+const hre = require("hardhat");
+const { proxy, PoseidonT3 } = require('poseidon-solidity')
+
+
 const {
   time,
   loadFixture,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
-const { expect } = require("chai");
+
+
+describe("Lottery", function () {
+  async function deployPoseidon() {
+
+    const Poseidon = await ethers.getContractFactory(`PoseidonT3`)
+    if (process.env.CI || process.env.DEPLOY) {
+      const deployInfo = PoseidonT3
+      if ((await ethers.provider.getCode(deployInfo.proxyAddress)) === '0x') {
+        await owner.sendTransaction({
+          to: deployInfo.from,
+          value: deployInfo.gas,
+        })
+        await ethers.provider.sendTransaction(deployInfo.tx)
+      }
+      if ((await ethers.provider.getCode(deployInfo.address)) === '0x') {
+        const tx = await owner.sendTransaction({
+          to: deployInfo.proxyAddress,
+          data: deployInfo.data,
+        })
+        const receipt = await tx.wait()
+        console.log(
+          `Cost of deploying T3 (poseidon-solidity): ${receipt.gasUsed.toString()}`
+        )
+      }
+      return Poseidon.attach(deployInfo.address)
+    }
+    const _poseidon = await Poseidon.deploy()
+    console.log({_poseidon})
+    return _poseidon
+  }
+
+  async function deploy() {
+    const deployedPoseidonT3 = await deployPoseidon()
+    const lottery = await hre.ethers.deployContract(
+      "Lottery",
+      [30n],
+      {
+        value: 0n,
+        libraries: {
+          PoseidonT3: deployedPoseidonT3.target,
+        }
+      }
+    );
+    return { lottery }
+
+  }
+
+  it("Should deploy", async function () {
+    const { lottery } = await deploy()
+    console.log(await lottery.getLastRoot())
+    await lottery.buyTicket(hre.ethers.zeroPadValue("0x01", 32))
+    console.log(await lottery.getLastRoot())
+
+  })
+})
 
 // describe("Lock", function () {
 //   // We define a fixture to reuse the same setup in every test.

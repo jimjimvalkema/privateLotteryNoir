@@ -40,7 +40,8 @@ contract MerkleTreeWithHistory {
     bytes32 _left,
     bytes32 _right
   ) public pure returns (bytes32) {
-    return  PoseidonT3.hash([_left, _right]); //keccak256(abi.encodePacked(_left, _right)); 
+    uint256[2] memory preimg = [uint256(_left), uint256(_right)];
+    return  bytes32(uint256(PoseidonT3.hash(preimg))); //TODO fix these type conversions and check gas
   }
 
   function _insert(bytes32 _leaf) internal returns (uint32 index) {
