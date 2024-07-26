@@ -30,7 +30,8 @@ contract MerkleTreeWithHistory {
       filledSubtrees[i] = zeros(i);
     }
 
-    roots[0] = zeros(_levels - 1);
+    //roots[0] = zeros(_levels - 1); // is this a off by one error?
+    roots[0] = zeros(_levels);
   }
 
   /**
