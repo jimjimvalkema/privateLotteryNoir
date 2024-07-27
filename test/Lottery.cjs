@@ -67,7 +67,8 @@ describe("Lottery", function () {
     const { lottery } = await deploy()
 
     // buy a ticket
-    await lottery.buyTicket(hre.ethers.zeroPadValue("0x01", 32))
+    await lottery.buyTicket(hre.ethers.zeroPadValue("0x0123", 32))
+    await lottery.buyTicket(hre.ethers.zeroPadValue("0x0e5ba52f96a24b7187ecebb3d59cc6cfcf2ae45a79f054a71039bbcc182304e3", 32))
 
     // get chain data
     const purchaseEventFilter = lottery.filters.Purchase() 
@@ -77,7 +78,9 @@ describe("Lottery", function () {
 
     // reproduce tree
     const hashFunction = (left, right)=>poseidon2([left, right])
-    const tree = new MerkleTree(Number(merkleTreeDepth), onchainLeaves, {hashFunction, zeroElement:hre.ethers.zeroPadValue("0x00", 32)})
+    const tree = new MerkleTree(Number(merkleTreeDepth), onchainLeaves, {hashFunction, zeroElement:0n})
+    console.log(tree.path(1).pathElements.map((x)=>hre.ethers.zeroPadValue(hre.ethers.toBeHex(x), 32)).toString()) 
+    console.log({root: hre.ethers.toBeHex( tree.root)})
 
     expect(await lottery.getLastRoot()).to.equal(hre.ethers.toBeHex( tree.root));
 
