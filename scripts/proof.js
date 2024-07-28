@@ -7,17 +7,19 @@ import { MerkleTree } from 'fixed-merkle-tree';
 
 
 export function hashCommitment({ secret, pickId, nullifierPreimage }) {
-    return ethers.zeroPadValue(ethers.toBeHex(poseidon3([secret, pickId, nullifierPreimage])),32)
+    const hashAsBigInt = poseidon3([secret, pickId, nullifierPreimage])
+    return ethers.zeroPadValue(ethers.toBeHex(hashAsBigInt),32)
 }
 
 export function hashNullifier(nullifierPreimage) {
-    return ethers.zeroPadValue(ethers.toBeHex(ethers.toBeHex(poseidon1([nullifierPreimage]))),32)
+    const hashAsBigInt = ethers.toBeHex(poseidon1([nullifierPreimage]))
+    return ethers.zeroPadValue(ethers.toBeHex(hashAsBigInt),32)
 }
 
 export async function getRevealWinnerCalldata({pickId, recipient, secret, nullifierPreimage, lotteryContract}) {
     const nullifier = hashNullifier(nullifierPreimage)
     const {proof, root} = await getSnarkProof({nullifier, pickId, recipient, secret, nullifierPreimage, lotteryContract})
-    return { root, nullifier, pickId: ethers.zeroPadValue(pickId, 32), recipient, snarkProof: proof }
+    return { root, nullifier, pickId: pickId, recipient, snarkProof: proof }
 }
 
 async function getSnarkProof({nullifier, pickId, recipient, secret, nullifierPreimage, lotteryContract}) {
@@ -26,7 +28,6 @@ async function getSnarkProof({nullifier, pickId, recipient, secret, nullifierPre
 
     const commitment = hashCommitment({ secret, pickId, nullifierPreimage })
     const { hashPath, commitmentIndex, root } = await getMerklePoof({ commitment, lotteryContract })
-    console.log({commitmentIndex})
 
     const proofInputs = {
         // private inputs
@@ -38,26 +39,25 @@ async function getSnarkProof({nullifier, pickId, recipient, secret, nullifierPre
         //public inputs
         root: root,
         nullifier: nullifier,
-        pick_id: pickId,
+        pick_id: ethers.zeroPadValue(ethers.toBeHex(pickId), 32),
         recipient: recipient,
     }
 
     const proof = await noir.generateProof(proofInputs)
-
-    //TODO remove this is debug
     // const isVerified = await noir.verifyProof(proof)
     // console.log({
-    //     inputs: proofInputs,
-    //     proof,
-    //     isVerified
+    //     isVerified,
+    //     publicInputs: proof.publicInputs
     // })
-
     return {proof: ethers.hexlify(proof.proof), root}
 }
 
 async function getMerklePoof({ commitment, lotteryContract }) {
     // get chain data
     const purchaseEventFilter = lotteryContract.filters.Purchase()
+
+    // TODO get block of when its deployed instead of starting at 0
+    // TODO most rpc have limits on event scanning so make one that does it in chunks
     const events = await lotteryContract.queryFilter(purchaseEventFilter, 0, "latest")
     const onchainLeaves = events.map((event) => event.topics[1])
     const merkleTreeDepth = await lotteryContract.levels()

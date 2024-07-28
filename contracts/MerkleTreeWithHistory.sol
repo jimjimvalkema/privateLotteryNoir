@@ -12,9 +12,6 @@ contract MerkleTreeWithHistory {
   uint32 public levels;
   
   // merkle leafs
-  // TODO remove and use event scanning instead
-  mapping (uint256 => bytes32) public commitmentLeafs; 
-
   mapping(uint256 => bytes32) public filledSubtrees;
   mapping(uint256 => bytes32) public roots;
   uint32 public constant ROOT_HISTORY_SIZE = 30;
@@ -35,7 +32,7 @@ contract MerkleTreeWithHistory {
   }
 
   /**
-    @dev Hash 2 tree leaves, returns keccak256(_left, _right)
+    @dev Hash 2 tree leaves, returns PoseidonT3([_left, _right])
   */
   function hashLeftRight(
     bytes32 _left,
@@ -69,7 +66,6 @@ contract MerkleTreeWithHistory {
     uint32 newRootIndex = (currentRootIndex + 1) % ROOT_HISTORY_SIZE;
     currentRootIndex = newRootIndex;
     roots[newRootIndex] = currentLevelHash;
-    commitmentLeafs[_nextIndex] = _leaf; //storing leaf into mapping with the current index
     nextIndex = _nextIndex + 1;
     return _nextIndex;
   }

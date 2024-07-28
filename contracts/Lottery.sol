@@ -1,9 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MerkleTreeWithHistory.sol";
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 
 event Purchase(bytes32 indexed commitment, uint32 leafIndex, uint256 timestamp);
@@ -28,8 +29,8 @@ enum GameState {
 
 //TODO future version should: handle refund if noone wins
 contract Lottery is MerkleTreeWithHistory, Ownable  {
-    mapping (bytes32 => bool) ticketCommitments;
-    mapping (bytes32 => bool) nullifiers;
+    mapping (bytes32 => bool) ticketCommitments; 
+    mapping (bytes32 => bool) nullifiers; // should maybe be public?
     address public verifier;
 
     uint256 public winningPickId;
@@ -37,7 +38,7 @@ contract Lottery is MerkleTreeWithHistory, Ownable  {
     uint256 public jackPot;
     GameState public gameState = GameState.Purchase;
 
-    address[] winners;
+    address[] public winners;
 
 
     
@@ -85,15 +86,18 @@ contract Lottery is MerkleTreeWithHistory, Ownable  {
 
         return publicInputs;
     }
-
+    // TODO future version should: allow the user to reveal before GameState.RevealWinners so they know for sure that they get the payout if they win
+    // there should be a ofchain 'mempool' with the reveal proofs of user or perhaps onchain as calldata.
+    // relayers can get a small cut of the prize. calc with block.basefee TODO figure out how to calc payout or do via prepaid
     function revealWinningCommitment(bytes32 _root, bytes32 _nullifier, uint256 _pickId, address _recipient, bytes calldata _snarkProof) public {
         require(gameState == GameState.RevealWinners , "The lottery isnt in the reveal winners state");
+        require(_pickId == winningPickId, "ur not a winner silly!");
+
         require(isKnownRoot(_root), "root is invallid or too old");
         require(nullifiers[_nullifier] == false, "this ticket is already revealed and is awaiting payout");
         bytes32[] memory publicInputs = _formatPublicInputs(_root,  _nullifier,  _pickId,  _recipient);
 
-        require(IVerifier(verifier).verify(_snarkProof, publicInputs), "snarkproof invallid");
-
+        require(IVerifier(verifier).verify(_snarkProof, publicInputs), "snarkproof invalid");
         winners.push(_recipient);
 
     }
