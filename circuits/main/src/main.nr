@@ -2,8 +2,8 @@ use dep::std::hash::poseidon;
 
 global TREE_DEPTH = 30;
 
-fn hash_commitment(secret: Field, pickId: Field, nullifier_preimage: Field) -> Field {
-    poseidon::bn254::hash_3([secret, pickId, nullifier_preimage])
+fn hash_commitment(secret: Field, pick_id: Field, nullifier_preimage: Field) -> Field {
+    poseidon::bn254::hash_3([secret, pick_id, nullifier_preimage])
 }
 
 fn hash_nullifier(nullifier_preimage: Field) -> Field{
@@ -31,7 +31,7 @@ pub fn compute_merkle_root<N>(leaf: Field, index: Field, hash_path: [Field; N]) 
 fn main(
     root: pub Field,
     nullifier: pub Field,
-    pickId: pub Field,
+    pick_id: pub Field, 
     recipient:pub Field,
 
     secret: Field,
@@ -44,7 +44,7 @@ fn main(
     let computed_nullifier = hash_nullifier(nullifier_preimage);
     assert(nullifier == computed_nullifier, "nullifier preimage doesnt match");
 
-    let commitment = hash_commitment(secret, pickId, nullifier_preimage);
+    let commitment = hash_commitment(secret, pick_id, nullifier_preimage);
     let computed_root = compute_merkle_root(commitment, commitment_index, hash_path);
     assert(root == computed_root, "computed commitment root doesn't match provided root");
 }
