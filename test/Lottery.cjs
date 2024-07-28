@@ -44,9 +44,10 @@ describe("Lottery", function () {
     const deployedPoseidonT3 = await deployPoseidon()
     const lottery = await hre.ethers.deployContract(
       "Lottery",
-      [30n],
+      //[merkleTreeDepth, verifierAddr, 1n, 420n]
+      [30n, "0x0000000000000000000000000000000000000123", 1n, 420n], //TODO deploy verifier and inputs its address here
       {
-        value: 0n,
+        value: 420n,
         libraries: {
           PoseidonT3: deployedPoseidonT3.target,
         }
@@ -67,8 +68,10 @@ describe("Lottery", function () {
     const { lottery } = await deploy()
 
     // buy a ticket
-    await lottery.buyTicket(hre.ethers.zeroPadValue("0x0123", 32))
-    await lottery.buyTicket(hre.ethers.zeroPadValue("0x0e5ba52f96a24b7187ecebb3d59cc6cfcf2ae45a79f054a71039bbcc182304e3", 32))
+    const ticketPrice = await lottery.ticketPrice()
+    console.log({ticketPrice})
+    await lottery.buyTicket(hre.ethers.zeroPadValue("0x0123", 32), { value: ticketPrice} )
+    await lottery.buyTicket(hre.ethers.zeroPadValue("0x0e5ba52f96a24b7187ecebb3d59cc6cfcf2ae45a79f054a71039bbcc182304e3", 32), { value: ticketPrice} )
 
     // get chain data
     const purchaseEventFilter = lottery.filters.Purchase() 
