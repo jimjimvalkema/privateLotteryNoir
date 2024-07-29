@@ -5,7 +5,6 @@ import { poseidon1, poseidon2, poseidon3 } from 'poseidon-lite';
 import { ethers } from 'ethers';
 import { MerkleTree } from 'fixed-merkle-tree';
 
-
 export function hashCommitment({ secret, pickId, nullifierPreimage }) {
     const hashAsBigInt = poseidon3([secret, pickId, nullifierPreimage])
     return ethers.zeroPadValue(ethers.toBeHex(hashAsBigInt),32)
