@@ -26,7 +26,7 @@ module.exports = buildModule("LotteryModule", (m) => {
     }
   );
 
-  return { Lottery };
+  return { Lottery, UltraVerifier };
 });
 
 // const LotteryModule = require("../ignition/modules/Lottery.cjs");
