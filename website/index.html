@@ -1,9 +1,66 @@
 <!doctype html>
+
+
 <html lang="en">
   <head>
+    <style>
+      .box {
+        border-style: solid;
+        margin: 1em;
+        padding: 1em;
+      }
+      
+    </style>
   </head>
   <body>
-    <h1>hi</h1>
-    <script type="module" src="/main.js"></script>
+    <h1 style="font-size: 6em" id="itsSoOver" hidden>Lottery is over!!!</h1>
+
+    <div id="deployUi" class="box">
+      <h2>deploy new lottery</h2>
+      <script type="module" src="/main.js"></script>
+
+      <label for="initialJackPot">Seed Initial Jackpot: </label>
+      <input value="0.00000000000000042" type="number" name="initialJackPot" id="initialJackPot" required />
+
+      <label for="ticketPrice">Ticket Price </label>
+      <input value="0.000000000000000001" type="number" name="ticketPrice" id="ticketPrice" required />
+
+      <button id="deploy">deploy</button>
+      <div>
+        deployed at <span id="deploymentUrl"></span>
+
+      </div>  
+  
+      
+    
+    
+    </div>
+
+    <div id="lotteryInteractionUi" hidden>
+      <div id="adminUi" class="box" >
+        <h2>admin ui</h2>
+        <label for="setWinningPickId">set winning pickId</label>
+        <input value="123" type="number" name="setWinningPickId" id="setWinningPickId" required />
+        <button id="setWinningPickIdBtn">setWinningPickId</button>
+        <div id="listWinners"></div>
+        <button id="payoutWinners">payoutWinners</button>
+  
+      </div>
+
+
+      <div id="" class="box" >
+        <h2>user ui</h2>
+        <label for="setPickId">set pickId</label>
+        <input value="123" type="number" name="setPickId" id="setPickId" required />
+        <button id="buyTicket">buyTicket</button>
+
+        <ul id="tickets">
+
+        </ul>
+  
+      </div>
+
+    </div>
+
   </body>
 </html>
