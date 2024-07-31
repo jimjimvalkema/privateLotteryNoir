@@ -29,8 +29,8 @@ enum GameState {
 
 //TODO future version should: handle refund if noone wins
 contract Lottery is MerkleTreeWithHistory, Ownable  {
-    mapping (bytes32 => bool) ticketCommitments; 
-    mapping (bytes32 => bool) nullifiers; // should maybe be public?
+    mapping (bytes32 => bool) public ticketCommitments; 
+    mapping (bytes32 => bool) public nullifiers; 
     address public verifier;
 
     uint256 public winningPickId;
@@ -95,6 +95,7 @@ contract Lottery is MerkleTreeWithHistory, Ownable  {
 
         require(isKnownRoot(_root), "root is invallid or too old");
         require(nullifiers[_nullifier] == false, "this ticket is already revealed and is awaiting payout");
+        nullifiers[_nullifier] = true;
         bytes32[] memory publicInputs = _formatPublicInputs(_root,  _nullifier,  _pickId,  _recipient);
 
         require(IVerifier(verifier).verify(_snarkProof, publicInputs), "snarkproof invalid");
