@@ -26,3 +26,6 @@ cp ignition/deployments/chain-11155111/artifacts/LotteryModule#Lottery.json webs
 yarn vite build website
 #TODO ipfs
 ```
+
+### ui:
+https://bafybeiahkpiajbouuj76vqa5g536khyus65myenon3s7cpuequ5fjlql6y.ipfs.dweb.link/

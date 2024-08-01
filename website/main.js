@@ -18,13 +18,17 @@ const provider = new ethers.BrowserProvider(window.ethereum)
 const signer = await provider.getSigner();
 window.signer = signer
 const lotteryContractAddr = getLotteryContractAddr()
-await listPurchasedTickets()
-await listWinnners()
+if (lotteryContractAddr) {
+    await listPurchasedTickets()
+    await listWinnners()
 
-console.log({lotteryContractAddr})
-const lottery = new ethers.Contract(lotteryContractAddr, lotteryAbi, signer)
-const gameState = await lottery.gameState()
-if (gameState === 2n) {document.querySelector("#itsSoOver").hidden = false}
+    console.log({lotteryContractAddr})
+    const lottery = new ethers.Contract(lotteryContractAddr, lotteryAbi, signer)
+    const gameState = await lottery.gameState()
+    if (gameState === 2n) {document.querySelector("#itsSoOver").hidden = false}
+
+
+}
 
 function getLotteryContractAddr() {
 
