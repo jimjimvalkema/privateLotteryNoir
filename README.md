@@ -1,17 +1,24 @@
 # privateLotteryNoir
 
 
-### deploy
+## deploy
+### deploy local
 ```shell
 npx hardhat node
 ```
 
 ```shell
-npx hardhat run scripts/deploy.js --network localhost
+npx hardhat run scripts/deploy.js --network localhost;
 ```
 
 
-### website
+### deploy sepolia
+```shell
+npx hardhat run scripts/deploy.js --network sepolia;
+```
+
+
+## website
 
 <!-- run webiste
 ```shell
@@ -19,13 +26,23 @@ cp ignition/deployments/chain-11155111/artifacts/LotteryModule#Lottery.json webs
 yarn vite website
 ``` -->
 
-### build and deploy to ipfs
+### build ui
 // TODO noir runs on only one core
 ```shell
-cp ignition/deployments/chain-11155111/artifacts/LotteryModule#Lottery.json website/abi/lotteryArtifacts.json #cant use file directly since it has a hashtag in the name so we copy and rename
-yarn vite build website
-#TODO ipfs
+cp ignition/deployments/chain-11155111/artifacts/LotteryModule#Lottery.json website/abi/lotteryArtifacts.json #cant use file directly since it has a hashtag in the name so we copy and rename;
+yarn vite build website;
+```
+
+### run ui local
+```shell
+python3 -m http.server -d website/dist/
+```
+
+<!-- TODO install ipfs -->
+### add to ipfs
+```shell
+ipfs add -r website/dist;
 ```
 
 ### ui:
-https://bafybeiahkpiajbouuj76vqa5g536khyus65myenon3s7cpuequ5fjlql6y.ipfs.dweb.link/
+https://bafybeifgqkhu6guc54nl36j2rvjrmlt5fle7fldoxq7ts7rlu7chuxz47u.ipfs.dweb.link/

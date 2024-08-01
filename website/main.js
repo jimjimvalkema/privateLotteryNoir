@@ -7,6 +7,22 @@ import lotteryByteCode from "./abi/bytecode.json" assert {type: 'json'}
 import { poseidon1 } from "poseidon-lite";
 const lotteryAbi = lotteryArtifact.abi // TODO put only the abi in lotteryArtifacts.json
 const FIELD_LIMIT = 21888242871839275222246405745257275088548364400416034343698204186575808495617n //using poseidon so we work with 254 bits instead of 256
+const sepolia = {
+    chainId: "0xaa36a7",
+    rpcUrls: ["https://rpc.sepolia.org/"],
+    chainName: "sepolia",
+    nativeCurrency: {
+      name: "Ethereum",
+      symbol: "ETH",
+      decimals: 18
+    },
+    blockExplorerUrls: ["https://sepolia.etherscan.io/"]
+
+}
+
+
+
+
 
 
 window.ethers = ethers
@@ -15,18 +31,40 @@ window.lotteryAbi = lotteryAbi
 window.getRevealWinnerCalldata = getRevealWinnerCalldata
 window.hashCommitment = hashCommitment
 const provider = new ethers.BrowserProvider(window.ethereum)
+await switchNetwork(sepolia, provider)
 const signer = await provider.getSigner();
 window.signer = signer
 const lotteryContractAddr = getLotteryContractAddr()
 if (lotteryContractAddr) {
-    await listPurchasedTickets()
-    await listWinnners()
+    await dumpErrorsInUi(listPurchasedTickets)
+    await dumpErrorsInUi(listWinnners)
 
     console.log({lotteryContractAddr})
     const lottery = new ethers.Contract(lotteryContractAddr, lotteryAbi, signer)
     const gameState = await lottery.gameState()
     if (gameState === 2n) {document.querySelector("#itsSoOver").hidden = false}
 
+
+}
+
+
+  async function switchNetwork(network,provider) {
+    try {
+        await provider.send("wallet_switchEthereumChain",[{ chainId: network.chainId }]);
+
+      } catch (switchError) {
+        window.switchError = switchError
+        // This error code indicates that the chain has not been added to MetaMask.
+        if (switchError.error && switchError.error.code === 4902) {
+          try {
+            await provider.send("wallet_addEthereumChain",[network]);
+
+          } catch (addError) {
+            // handle "add" error
+          }
+        }
+        // handle other "switch" errors
+      }
 
 }
 
@@ -83,7 +121,7 @@ async function deployBtnHandler() {
     const deploymentUrl = newUrl.toString()
     document.querySelector("#deploymentUrl").innerHTML = deploymentUrl
 }
-document.querySelector("#deploy").addEventListener("click", async () => await deployBtnHandler())
+document.querySelector("#deploy").addEventListener("click", async () =>  await dumpErrorsInUi(deployBtnHandler))
 
 
 async function buyTicketHandler() {
@@ -107,7 +145,7 @@ async function buyTicketHandler() {
     await listPurchasedTickets()
 
 }
-document.querySelector("#buyTicket").addEventListener("click", ()=>buyTicketHandler())
+document.querySelector("#buyTicket").addEventListener("click", async()=> await dumpErrorsInUi(buyTicketHandler))
 
 async function claimWinner(commitmentPreimage) {
     const lotteryContractAddr = getLotteryContractAddr()
@@ -132,7 +170,7 @@ async function setWinningPickIdBtnHandler() {
     await listPurchasedTickets()
 }
 
-document.querySelector("#setWinningPickIdBtn").addEventListener("click", async ()=> await setWinningPickIdBtnHandler())
+document.querySelector("#setWinningPickIdBtn").addEventListener("click", async ()=> await dumpErrorsInUi(setWinningPickIdBtnHandler))
 
 async function listPurchasedTickets() {
     document.querySelector("#tickets").innerHTML = ""
@@ -182,8 +220,20 @@ async function payoutWinnersHandler() {
     await tx.wait(1)
     document.querySelector("#itsSoOver").hidden = false
 }
-document.querySelector("#payoutWinners").addEventListener("click", async ()=>await payoutWinnersHandler())
+document.querySelector("#payoutWinners").addEventListener("click", async ()=>await dumpErrorsInUi(payoutWinnersHandler))
 
+
+async function dumpErrorsInUi(func) {
+    try {
+        await func()
+        
+    } catch (error) {
+        console.error(error)
+        document.querySelector("#errors").innerText += `${func.name}:${error}` 
+        
+    }
+    
+}
 async function listWinnners() {
     const lotteryContractAddr = getLotteryContractAddr()
     const lottery = new ethers.Contract(lotteryContractAddr, lotteryAbi, signer)
